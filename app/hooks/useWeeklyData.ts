@@ -82,15 +82,8 @@ function resolveYearGroup(year: number | undefined, yearInput: string): "current
   return "other";
 }
 
-function guessPrevWeek(weekId: string): string | undefined {
-  const asNum = Number(weekId);
-  if (!Number.isFinite(asNum)) return undefined;
-  const prev = asNum - 1;
-  return prev > 0 ? String(prev) : undefined;
-}
-
 function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutcome {
-  const prevOutput = loadProcessedOutput(params.weekIdPrev || guessPrevWeek(params.weekId));
+  const prevOutput = loadProcessedOutput(params.weekIdPrev);
   const prevMap = new Map<string, AllocationResult>();
   if (prevOutput) {
     prevOutput.records.forEach((r) => prevMap.set(r.sku, r));

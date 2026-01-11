@@ -4,17 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { ControlsPanel } from "./components/ControlsPanel";
 import { ExportButton } from "./components/ExportButton";
 import { ResultsTable } from "./components/ResultsTable";
+import { RatioInput } from "./components/RatioInput";
 import { DEFAULT_PENDING_CONFIG, DEFAULT_RATIOS, DEFAULT_THRESHOLDS } from "./lib/constants";
 import { PendingDeductConfig, Thresholds, WeeklyParams } from "./lib/types";
 import { useWeeklyDataContext } from "./providers/WeeklyDataProvider";
 import { useSearchParams } from "next/navigation";
-
-function guessPrevWeek(weekId: string): string | undefined {
-  const asNum = Number(weekId);
-  if (!Number.isFinite(asNum)) return undefined;
-  const prev = asNum - 1;
-  return prev > 0 ? String(prev) : undefined;
-}
 
 function todayWeekId(): string {
   const d = new Date();
@@ -29,11 +23,13 @@ export default function Home() {
   const [weekIdPrev, setWeekIdPrev] = useState("");
   const [year, setYear] = useState("2025");
   const [thresholds, setThresholds] = useState<Thresholds>(DEFAULT_THRESHOLDS);
+  const [ratios, setRatios] = useState(DEFAULT_RATIOS);
   const [pendingConfig, setPendingConfig] = useState<PendingDeductConfig>(DEFAULT_PENDING_CONFIG);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formError, setFormError] = useState<string>();
   const [showOtherYears, setShowOtherYears] = useState(false);
   const [weekIdTouched, setWeekIdTouched] = useState(false);
+  const [showLowOnly, setShowLowOnly] = useState(false);
   const {
     records,
     loading,
@@ -41,32 +37,26 @@ export default function Home() {
     baselineMissing,
     prevWeekUsed,
     processFile,
-    processDefault,
     resetError,
     loadStoredWeek,
     hydrateFromOutput,
-    refreshStoredWeeks
+    refreshStoredWeeks,
+    storedWeeks
   } = useWeeklyDataContext();
   const searchParams = useSearchParams();
   const weekFromUrl = searchParams.get("week");
   const lowStockRecords = useMemo(() => records.filter((r) => r.lowStock), [records]);
-  const lowStockVisible = useMemo(
-    () =>
-      showOtherYears ? lowStockRecords : lowStockRecords.filter((r) => r.yearGroup === "current" || r.yearGroup === "previous"),
-    [lowStockRecords, showOtherYears]
-  );
-  const lowStockHiddenCount = lowStockRecords.length - lowStockVisible.length;
 
   const params: WeeklyParams = useMemo(
     () => ({
       weekId,
-      weekIdPrev: weekIdPrev || guessPrevWeek(weekId),
+      weekIdPrev: weekIdPrev || undefined,
       year,
-      ratios: DEFAULT_RATIOS,
+      ratios,
       pendingDeduct: pendingConfig,
       thresholds
     }),
-    [weekId, weekIdPrev, year, pendingConfig, thresholds]
+    [weekId, weekIdPrev, year, pendingConfig, thresholds, ratios]
   );
 
   const validate = () => {
@@ -98,14 +88,9 @@ export default function Home() {
     refreshStoredWeeks();
   };
 
-  const handleProcessDefault = async () => {
-    if (!validate()) return;
-    await processDefault(params);
-    refreshStoredWeeks();
-  };
-
   const stats = useMemo(() => {
-    const visibleRecords = showOtherYears ? records : records.filter((r) => r.yearGroup !== "other");
+    const basePool = showLowOnly ? lowStockRecords : records;
+    const visibleRecords = basePool.filter((r) => showOtherYears || r.yearGroup !== "other");
     const total = visibleRecords.length;
     const lowStockCount = visibleRecords.filter((r) => r.lowStock).length;
     const recalcCount = visibleRecords.filter((r) => r.needsRecalc).length;
@@ -119,16 +104,15 @@ export default function Home() {
       },
       { allocatable: 0, xhs: 0, tb: 0, yz: 0 }
     );
-    const hiddenCount = records.length - visibleRecords.length;
+    const hiddenCount = basePool.filter((r) => r.yearGroup === "other").length;
     return { total, lowStockCount, recalcCount, allocSum, hiddenCount, visibleRecords };
-  }, [records, showOtherYears]);
+  }, [records, showOtherYears, showLowOnly, lowStockRecords]);
 
   return (
     <main>
-      <h1>周度上架分配（小红书 / 淘宝 / 有赞）</h1>
+      <h1>Stock Allocator</h1>
       <p className="lead">
-        导入 Excel 周报后，自动计算真实库存、可上架库存（allocatable），并按 70/20/10 配比生成建议上架数量。
-        同时给出低库存提醒与上一周对比触发的“需要重算”标记。
+        导入 Excel 周报后，自动计算真实库存并进行库存分配；同时给出低库存提醒与上一周对比触发的“需要重算”标记。
       </p>
 
       <ControlsPanel
@@ -149,8 +133,12 @@ export default function Home() {
         onPendingConfigChange={setPendingConfig}
         onFilePicked={setSelectedFile}
         onProcess={handleProcessUpload}
-        onProcessDefault={handleProcessDefault}
+        storedWeeks={storedWeeks}
+        onWeekIdPrevSelect={setWeekIdPrev}
       />
+      <div className="card" style={{ marginBottom: 12 }}>
+        <RatioInput ratios={ratios} onChange={setRatios} />
+      </div>
 
       {(error || baselineMissing) && (
         <div className="banner">
@@ -180,6 +168,9 @@ export default function Home() {
               allocatable 总计：{stats.allocSum.allocatable} （小红书 {stats.allocSum.xhs} / 淘宝{" "}
               {stats.allocSum.tb} / 有赞 {stats.allocSum.yz}）
             </div>
+            <button className="secondary" onClick={() => setShowLowOnly((v) => !v)}>
+              {showLowOnly ? "收起低库存预警" : "低库存预警"}
+            </button>
             {stats.hiddenCount > 0 && (
               <button className="secondary" onClick={() => setShowOtherYears((v) => !v)}>
                 {showOtherYears ? "隐藏其他年份" : `展开其他年份 (${stats.hiddenCount})`}

@@ -19,7 +19,8 @@ interface ControlsPanelProps {
   onPendingConfigChange: (value: PendingDeductConfig) => void;
   onFilePicked: (file: File | null) => void;
   onProcess: () => void;
-  onProcessDefault: () => void;
+  storedWeeks?: string[];
+  onWeekIdPrevSelect?: (value: string) => void;
 }
 
 export function ControlsPanel({
@@ -37,7 +38,8 @@ export function ControlsPanel({
   onPendingConfigChange,
   onFilePicked,
   onProcess,
-  onProcessDefault
+  storedWeeks,
+  onWeekIdPrevSelect
 }: ControlsPanelProps) {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const formatToday = () => {
@@ -53,65 +55,77 @@ export function ControlsPanel({
   };
 
   return (
-    <div className="card" style={{ marginBottom: 16 }}>
-      <div className="grid">
-        <label>
-          本周 weekId
-          <div style={{ display: "flex", gap: 8 }}>
+    <div className="card controls-card">
+      <div className="controls-grid two-row">
+        <div className="field">
+          <label>本次Id</label>
+          <div className="inline">
             <input
               value={weekId}
               onChange={(e) => onWeekIdChange(e.target.value)}
-              placeholder="必填，例如 20250112（可点右侧填入今日）"
+              placeholder="必填，例如 20250112"
             />
-            <button type="button" className="secondary" onClick={() => onWeekIdChange(formatToday())}>
+            <button type="button" className="secondary small" onClick={() => onWeekIdChange(formatToday())}>
               填入今日
             </button>
           </div>
-        </label>
-        <label>
-          上一周 weekId（可选）
-          <input
+        </div>
+        <div className="field">
+          <label>上次Id（可选）</label>
+          <select
             value={weekIdPrev ?? ""}
-            onChange={(e) => onWeekIdPrevChange(e.target.value)}
-            placeholder="留空则自动 weekId-1"
-          />
-        </label>
-        <label>
-          年份（必填，例如 2025）
+            onChange={(e) => {
+              const v = e.target.value;
+              onWeekIdPrevChange(v);
+              if (v) onWeekIdPrevSelect?.(v);
+            }}
+          >
+            <option value="">历史记录（可留空）</option>
+            {storedWeeks?.map((w) => (
+              <option key={w} value={w}>
+                {w}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label>年份（必填，例如 2025）</label>
           <input value={year} onChange={(e) => onYearChange(e.target.value)} />
-        </label>
-        <label>
-          低库存阈值
-          <input
-            type="number"
-            min={0}
-            value={thresholds.lowStockThreshold}
-            onChange={(e) =>
-              onThresholdsChange({
-                ...thresholds,
-                lowStockThreshold: Number(e.target.value || DEFAULT_THRESHOLDS.lowStockThreshold)
-              })
-            }
-          />
-        </label>
-        <label>
-          周变化阈值（%）
-          <input
-            type="number"
-            min={0}
-            value={thresholds.changeThresholdPercent}
-            onChange={(e) =>
-              onThresholdsChange({
-                ...thresholds,
-                changeThresholdPercent: Number(
-                  e.target.value || DEFAULT_THRESHOLDS.changeThresholdPercent
-                )
-              })
-            }
-          />
-        </label>
-        <label>
-          待发扣减策略
+        </div>
+        <div className="field inline stretch">
+          <div style={{ flex: 1 }}>
+            <label>低库存阈值</label>
+            <input
+              type="number"
+              min={0}
+              value={thresholds.lowStockThreshold}
+              onChange={(e) =>
+                onThresholdsChange({
+                  ...thresholds,
+                  lowStockThreshold: Number(e.target.value || DEFAULT_THRESHOLDS.lowStockThreshold)
+                })
+              }
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label>周变化阈值（%）</label>
+            <input
+              type="number"
+              min={0}
+              value={thresholds.changeThresholdPercent}
+              onChange={(e) =>
+                onThresholdsChange({
+                  ...thresholds,
+                  changeThresholdPercent: Number(
+                    e.target.value || DEFAULT_THRESHOLDS.changeThresholdPercent
+                  )
+                })
+              }
+            />
+          </div>
+        </div>
+        <div className="field">
+          <label>待发扣减策略</label>
           <select
             value={pendingConfig.strategy}
             onChange={(e) => handleStrategyChange(e.target.value as PendingDeductConfig["strategy"])}
@@ -123,36 +137,28 @@ export function ControlsPanel({
           {pendingConfig.strategy === "custom" && (
             <span className="tag">当前：{pendingConfig.customFields?.join(", ")}</span>
           )}
-        </label>
+        </div>
+        <div className="field upload-stack">
+          <label>上传 Excel</label>
+          <div className="upload-row">
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={(e) => onFilePicked(e.target.files?.[0] ?? null)}
+            />
+            <button className="primary" disabled={loading} onClick={onProcess}>
+              {loading ? "处理中…" : "上传并计算"}
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 12, alignItems: "center" }}>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".xlsx,.xls"
-          onChange={(e) => onFilePicked(e.target.files?.[0] ?? null)}
-        />
-        <button className="primary" disabled={loading} onClick={onProcess}>
-          {loading ? "处理中…" : "用上传的 Excel 计算"}
-        </button>
-        <button className="secondary" disabled={loading} onClick={onProcessDefault}>
-          {loading ? "处理中…" : "使用默认 in_stock.xlsx"}
-        </button>
-        <span className="tag">配比：小红书 70% / 淘宝 20% / 有赞 10%</span>
-      </div>
       {formError && (
         <div className="banner">
           <span className="pill danger">校验</span> {formError}
         </div>
       )}
-      <div className="banner">
-        <div style={{ fontWeight: 700, marginBottom: 4 }}>口径提示</div>
-        <div style={{ color: "#cbd5e1", fontSize: 14, lineHeight: 1.6 }}>
-          待发（预售/待履约）视为需求/占用；库存分配输出的是各平台实际上架数量（可卖/配额）。
-          缺口时请调整扣减策略或回传真实口径。
-        </div>
-      </div>
     </div>
   );
 }

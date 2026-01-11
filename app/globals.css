@@ -35,12 +35,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 14px 20px;
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-weight: 800;
   letter-spacing: 0.5px;
+}
+
+.brand img {
+  width: 28px;
+  height: 28px;
 }
 
 .topbar nav {
@@ -97,6 +105,17 @@ body {
   color: #1d4ed8;
 }
 
+.ratio-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ratio-row label {
+  width: 140px;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -130,6 +149,60 @@ p.lead {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
+}
+
+.controls-card {
+  padding: 18px;
+}
+
+.controls-grid {
+  display: grid;
+  gap: 16px 14px;
+}
+
+.controls-grid.two-row {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inline {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.inline.stacked {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inline select {
+  min-width: 140px;
+}
+
+.upload-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.upload-stack {
+  grid-column: 1 / -1;
+}
+
+.stretch {
+  gap: 12px;
+}
+
+button.small {
+  padding: 8px 10px;
+  font-weight: 600;
 }
 
 label {

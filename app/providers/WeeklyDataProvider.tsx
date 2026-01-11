@@ -46,19 +46,48 @@ export function WeeklyDataProvider({ children }: { children: React.ReactNode }) 
       value.clearData();
     }
   };
-  return (
-    <WeeklyDataContext.Provider
-      value={{ ...value, storedWeeks, loadStoredWeek, refreshStoredWeeks, clearStored, deleteStored }}
-    >
-      {children}
-    </WeeklyDataContext.Provider>
-  );
+  const ctxValue: WeeklyDataContextValue = {
+    records: value.records,
+    loading: value.loading,
+    error: value.error,
+    baselineMissing: value.baselineMissing,
+    prevWeekUsed: value.prevWeekUsed,
+    lastWeekId: value.lastWeekId,
+    processFile: value.processFile,
+    processDefault: value.processDefault,
+    resetError: value.resetError,
+    hydrateFromOutput: value.hydrateFromOutput,
+    clearData: value.clearData,
+    storedWeeks,
+    loadStoredWeek,
+    refreshStoredWeeks,
+    clearStored,
+    deleteStored
+  };
+  return <WeeklyDataContext.Provider value={ctxValue}>{children}</WeeklyDataContext.Provider>;
 }
 
 export function useWeeklyDataContext() {
   const ctx = useContext(WeeklyDataContext);
   if (!ctx) {
-    throw new Error("useWeeklyDataContext must be used within WeeklyDataProvider");
+    return {
+      records: [],
+      loading: false,
+      error: undefined,
+      baselineMissing: false,
+      prevWeekUsed: undefined,
+      lastWeekId: undefined,
+      processFile: async () => {},
+      processDefault: async () => {},
+      resetError: () => {},
+      hydrateFromOutput: () => {},
+      clearData: () => {},
+      storedWeeks: [],
+      loadStoredWeek: () => null,
+      refreshStoredWeeks: () => {},
+      clearStored: () => {},
+      deleteStored: () => {}
+    } as WeeklyDataContextValue;
   }
   return ctx;
 }
