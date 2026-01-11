@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { ControlsPanel } from "./components/ControlsPanel";
 import { ExportButton } from "./components/ExportButton";
 import { ResultsTable } from "./components/ResultsTable";
@@ -18,7 +18,7 @@ function todayWeekId(): string {
   return `${y}${m}${day}`;
 }
 
-export default function Home() {
+function HomeContent() {
   const [weekId, setWeekId] = useState(() => todayWeekId());
   const [weekIdPrev, setWeekIdPrev] = useState("");
   const [year, setYear] = useState("2025");
@@ -183,5 +183,13 @@ export default function Home() {
       <ExportButton weekId={weekId} records={records} />
       <ResultsTable records={stats.visibleRecords ?? records} />
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="card">加载中…</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
