@@ -123,11 +123,9 @@ export function detectTriggers(
   }
 
   const reasons: string[] = [];
-  const delta = Math.abs(current.realStock - previous.realStock) / Math.max(1, previous.realStock);
-  if (delta > thresholds.changeThresholdPercent / 100) {
-    reasons.push(
-      `真实库存变化 ${Math.round(delta * 100)}% 超过阈值 ${thresholds.changeThresholdPercent}%`
-    );
+  if (current.realStock < previous.realStock) {
+    const drop = (previous.realStock - current.realStock) / Math.max(1, previous.realStock);
+    reasons.push(`真实库存下降 ${Math.round(drop * 100)}% 需要重新分配`);
   }
 
   ([

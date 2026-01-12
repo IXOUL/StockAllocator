@@ -6,7 +6,7 @@ import { ExportButton } from "./components/ExportButton";
 import { ResultsTable } from "./components/ResultsTable";
 import { RatioInput } from "./components/RatioInput";
 import { DEFAULT_PENDING_CONFIG, DEFAULT_RATIOS, DEFAULT_THRESHOLDS } from "./lib/constants";
-import { PendingDeductConfig, Thresholds, WeeklyParams } from "./lib/types";
+import { AllocationResult, PendingDeductConfig, Thresholds, WeeklyParams } from "./lib/types";
 import { useWeeklyDataContext } from "./providers/WeeklyDataProvider";
 import { useSearchParams } from "next/navigation";
 
@@ -46,6 +46,45 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const weekFromUrl = searchParams.get("week");
   const lowStockRecords = useMemo(() => records.filter((r) => r.lowStock), [records]);
+  const reallocationRecords = useMemo(() => records.filter((r) => r.allocationChanged), [records]);
+  const reallocationExportBaseColumns = useMemo(
+    () => [
+      { key: "sku", label: "sku", get: (r: AllocationResult) => r.sku },
+      { key: "name", label: "name", get: (r: AllocationResult) => r.name ?? "" },
+      { key: "year", label: "year", get: (r: AllocationResult) => r.year ?? "" },
+      { key: "allocatable", label: "allocatable", get: (r: AllocationResult) => r.allocatable },
+      { key: "xhsListing", label: "xhsListing", get: (r: AllocationResult) => r.xhsListing },
+      { key: "tbListing", label: "tbListing", get: (r: AllocationResult) => r.tbListing },
+      { key: "yzListing", label: "yzListing", get: (r: AllocationResult) => r.yzListing },
+      { key: "reasons", label: "reasons", get: (r: AllocationResult) => r.reasons.join("; ") }
+    ],
+    []
+  );
+  const reallocationExportWithStockColumns = useMemo(
+    () => [
+      { key: "totalStock", label: "totalStock", get: (r: AllocationResult) => r.totalStock },
+      { key: "platformFulfillment", label: "platformFulfillment", get: (r: AllocationResult) => r.platformFulfillment },
+      { key: "realStock", label: "realStock", get: (r: AllocationResult) => r.realStock },
+      { key: "xhsPending", label: "xhsPending", get: (r: AllocationResult) => r.xhsPending },
+      { key: "tbPending", label: "tbPending", get: (r: AllocationResult) => r.tbPending },
+      { key: "yzPending", label: "yzPending", get: (r: AllocationResult) => r.yzPending }
+    ],
+    []
+  );
+  const reallocationExportColumns = useMemo(
+    () => [...reallocationExportBaseColumns, ...reallocationExportWithStockColumns],
+    [reallocationExportBaseColumns, reallocationExportWithStockColumns]
+  );
+  const lowStockExportColumns = useMemo(
+    () => [
+      { key: "sku", label: "sku", get: (r: AllocationResult) => r.sku },
+      { key: "name", label: "name", get: (r: AllocationResult) => r.name ?? "" },
+      { key: "year", label: "year", get: (r: AllocationResult) => r.year ?? "" },
+      { key: "realStock", label: "realStock", get: (r: AllocationResult) => r.realStock },
+      { key: "reasons", label: "reasons", get: (r: AllocationResult) => r.reasons.join("; ") }
+    ],
+    []
+  );
 
   const params: WeeklyParams = useMemo(
     () => ({
@@ -94,6 +133,7 @@ function HomeContent() {
     const total = visibleRecords.length;
     const lowStockCount = visibleRecords.filter((r) => r.lowStock).length;
     const recalcCount = visibleRecords.filter((r) => r.needsRecalc).length;
+    const allocationChangedCount = visibleRecords.filter((r) => r.allocationChanged).length;
     const allocSum = visibleRecords.reduce(
       (acc, r) => {
         acc.allocatable += r.allocatable;
@@ -105,7 +145,7 @@ function HomeContent() {
       { allocatable: 0, xhs: 0, tb: 0, yz: 0 }
     );
     const hiddenCount = basePool.filter((r) => r.yearGroup === "other").length;
-    return { total, lowStockCount, recalcCount, allocSum, hiddenCount, visibleRecords };
+    return { total, lowStockCount, recalcCount, allocationChangedCount, allocSum, hiddenCount, visibleRecords };
   }, [records, showOtherYears, showLowOnly, lowStockRecords]);
 
   return (
@@ -164,6 +204,7 @@ function HomeContent() {
             <div className="pill muted">SKU 数：{stats.total}</div>
             <div className="pill danger">低库存：{stats.lowStockCount}</div>
             <div className="pill warn">需要重算：{stats.recalcCount}</div>
+            <div className="pill info">分配变动：{stats.allocationChangedCount}</div>
             <div className="tag">
               allocatable 总计：{stats.allocSum.allocatable} （小红书 {stats.allocSum.xhs} / 淘宝{" "}
               {stats.allocSum.tb} / 有赞 {stats.allocSum.yz}）
@@ -180,7 +221,32 @@ function HomeContent() {
         </div>
       )}
 
-      <ExportButton weekId={weekId} records={records} />
+      {records.length > 0 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "12px 0" }}>
+          <ExportButton weekId={weekId} records={records} label="全部结果" />
+          <ExportButton
+            weekId={weekId}
+            records={reallocationRecords}
+            label="重新分配结果（隐藏库存/待发）"
+            filenamePrefix="reallocated"
+            columns={reallocationExportBaseColumns}
+          />
+          <ExportButton
+            weekId={weekId}
+            records={reallocationRecords}
+            label="重新分配结果（含库存/待发）"
+            filenamePrefix="reallocated_with_stock"
+            columns={reallocationExportColumns}
+          />
+          <ExportButton
+            weekId={weekId}
+            records={lowStockRecords}
+            label="低库存预警"
+            filenamePrefix="low_stock"
+            columns={lowStockExportColumns}
+          />
+        </div>
+      )}
       <ResultsTable records={stats.visibleRecords ?? records} />
     </main>
   );

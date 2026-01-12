@@ -96,14 +96,8 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
     const allocatable = realStock;
     const freshlyAllocated = allocateListings(allocatable, params.ratios || DEFAULT_RATIOS);
     const yearGroup = resolveYearGroup(row.year, params.year);
-    const allocationChanged =
-      !!prev &&
-      (prev.xhsListing !== freshlyAllocated.xhsListing ||
-        prev.tbListing !== freshlyAllocated.tbListing ||
-        prev.yzListing !== freshlyAllocated.yzListing);
     const totalStockDropOnly =
       !!prev &&
-      !allocationChanged &&
       row.totalStock < prev.totalStock &&
       row.platformFulfillment === prev.platformFulfillment;
     const prevSnapshot = prev
@@ -126,8 +120,8 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
       tbListing: freshlyAllocated.tbListing,
       yzListing: freshlyAllocated.yzListing,
       yearGroup,
-      allocationChanged,
-      totalStockDropOnly,
+      allocationChanged: false,
+      totalStockDropOnly: false,
       prevSnapshot,
       lowStock: realStock < params.thresholds.lowStockThreshold,
       needsRecalc: false,
@@ -146,9 +140,17 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
         }
       : freshlyAllocated;
 
+    const allocationChanged =
+      !!prev &&
+      (prev.xhsListing !== finalListings.xhsListing ||
+        prev.tbListing !== finalListings.tbListing ||
+        prev.yzListing !== finalListings.yzListing);
+
     return {
       ...base,
       ...finalListings,
+      allocationChanged,
+      totalStockDropOnly: totalStockDropOnly && !allocationChanged,
       needsRecalc: triggers.needsRecalc,
       reasons: canReusePrev ? [...triggers.reasons, "沿用上一周分配（未超阈值）"] : triggers.reasons,
       missingPrev: triggers.missingPrev
