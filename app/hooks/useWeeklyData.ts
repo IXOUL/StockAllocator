@@ -112,6 +112,7 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
         }
       : undefined;
 
+    const isZeroStockCarryover = !!prev && prev.realStock === 0 && realStock === 0;
     const base: AllocationResult = {
       ...row,
       realStock,
@@ -123,10 +124,24 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
       allocationChanged: false,
       totalStockDropOnly: false,
       prevSnapshot,
-      lowStock: realStock < params.thresholds.lowStockThreshold,
+      lowStock: !isZeroStockCarryover && realStock < params.thresholds.lowStockThreshold,
       needsRecalc: false,
       reasons: []
     };
+
+    if (prev && realStock === prev.realStock) {
+      return {
+        ...base,
+        xhsListing: prev.xhsListing,
+        tbListing: prev.tbListing,
+        yzListing: prev.yzListing,
+        allocationChanged: false,
+        totalStockDropOnly: false,
+        needsRecalc: false,
+        reasons: ["真实库存未变化，沿用上一周分配"],
+        missingPrev: false
+      };
+    }
 
     const triggers = detectTriggers(base, prev, params.thresholds);
     const prevListingSum = prev ? prev.xhsListing + prev.tbListing + prev.yzListing : 0;
@@ -140,11 +155,12 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
         }
       : freshlyAllocated;
 
-    const allocationChanged =
+    const listingChanged =
       !!prev &&
       (prev.xhsListing !== finalListings.xhsListing ||
         prev.tbListing !== finalListings.tbListing ||
         prev.yzListing !== finalListings.yzListing);
+    const allocationChanged = listingChanged && triggers.needsRecalc;
 
     return {
       ...base,
@@ -159,6 +175,11 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
 
   const order = { current: 0, previous: 1, other: 2 } as const;
   records.sort((a, b) => {
+    if (a.needsRecalc !== b.needsRecalc) return Number(b.needsRecalc) - Number(a.needsRecalc);
+    if (a.lowStock !== b.lowStock) return Number(b.lowStock) - Number(a.lowStock);
+    const aStable = !a.needsRecalc && !a.lowStock && !a.allocationChanged;
+    const bStable = !b.needsRecalc && !b.lowStock && !b.allocationChanged;
+    if (aStable !== bStable) return Number(aStable) - Number(bStable);
     if (a.allocationChanged !== b.allocationChanged) return Number(b.allocationChanged) - Number(a.allocationChanged);
     const groupDiff = order[a.yearGroup] - order[b.yearGroup];
     if (groupDiff !== 0) return groupDiff;

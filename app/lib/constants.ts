@@ -8,5 +8,5 @@ export const DEFAULT_PENDING_CONFIG: PendingDeductConfig = {
 
 export const DEFAULT_THRESHOLDS: Thresholds = {
   lowStockThreshold: 2,
-  changeThresholdPercent: 30
+  changeThresholdPercent: 20
 };

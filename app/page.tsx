@@ -47,6 +47,10 @@ function HomeContent() {
   const weekFromUrl = searchParams.get("week");
   const lowStockRecords = useMemo(() => records.filter((r) => r.lowStock), [records]);
   const reallocationRecords = useMemo(() => records.filter((r) => r.allocationChanged), [records]);
+  const sortedReallocationRecords = useMemo(
+    () => [...reallocationRecords].sort((a, b) => a.sku.localeCompare(b.sku)),
+    [reallocationRecords]
+  );
   const reallocationExportBaseColumns = useMemo(
     () => [
       { key: "sku", label: "sku", get: (r: AllocationResult) => r.sku },
@@ -56,6 +60,7 @@ function HomeContent() {
       { key: "xhsListing", label: "xhsListing", get: (r: AllocationResult) => r.xhsListing },
       { key: "tbListing", label: "tbListing", get: (r: AllocationResult) => r.tbListing },
       { key: "yzListing", label: "yzListing", get: (r: AllocationResult) => r.yzListing },
+      { key: "lowStock", label: "lowStock", get: (r: AllocationResult) => r.lowStock },
       { key: "reasons", label: "reasons", get: (r: AllocationResult) => r.reasons.join("; ") }
     ],
     []
@@ -75,15 +80,9 @@ function HomeContent() {
     () => [...reallocationExportBaseColumns, ...reallocationExportWithStockColumns],
     [reallocationExportBaseColumns, reallocationExportWithStockColumns]
   );
-  const lowStockExportColumns = useMemo(
-    () => [
-      { key: "sku", label: "sku", get: (r: AllocationResult) => r.sku },
-      { key: "name", label: "name", get: (r: AllocationResult) => r.name ?? "" },
-      { key: "year", label: "year", get: (r: AllocationResult) => r.year ?? "" },
-      { key: "realStock", label: "realStock", get: (r: AllocationResult) => r.realStock },
-      { key: "reasons", label: "reasons", get: (r: AllocationResult) => r.reasons.join("; ") }
-    ],
-    []
+  const sortedRecords = useMemo(
+    () => [...records].sort((a, b) => a.sku.localeCompare(b.sku)),
+    [records]
   );
 
   const params: WeeklyParams = useMemo(
@@ -223,27 +222,20 @@ function HomeContent() {
 
       {records.length > 0 && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "12px 0" }}>
-          <ExportButton weekId={weekId} records={records} label="全部结果" />
+          <ExportButton weekId={weekId} records={sortedRecords} label="全部结果" />
           <ExportButton
             weekId={weekId}
-            records={reallocationRecords}
+            records={sortedReallocationRecords}
             label="重新分配结果（隐藏库存/待发）"
             filenamePrefix="reallocated"
             columns={reallocationExportBaseColumns}
           />
           <ExportButton
             weekId={weekId}
-            records={reallocationRecords}
+            records={sortedReallocationRecords}
             label="重新分配结果（含库存/待发）"
             filenamePrefix="reallocated_with_stock"
             columns={reallocationExportColumns}
-          />
-          <ExportButton
-            weekId={weekId}
-            records={lowStockRecords}
-            label="低库存预警"
-            filenamePrefix="low_stock"
-            columns={lowStockExportColumns}
           />
         </div>
       )}

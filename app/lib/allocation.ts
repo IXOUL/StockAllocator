@@ -123,25 +123,14 @@ export function detectTriggers(
   }
 
   const reasons: string[] = [];
-  if (current.realStock < previous.realStock) {
-    const drop = (previous.realStock - current.realStock) / Math.max(1, previous.realStock);
-    reasons.push(`真实库存下降 ${Math.round(drop * 100)}% 需要重新分配`);
-  }
-
-  ([
-    ["xhsPending", "小红书"],
-    ["tbPending", "淘宝"],
-    ["yzPending", "有赞"]
-  ] as const).forEach(([key, label]) => {
-    if (previous[key] > 0 && current[key] === 0) {
-      reasons.push(`${label} 待发从 ${previous[key]} 变为 0`);
+  if (previous.realStock > 0 && current.realStock === 0) {
+    reasons.push("真实库存从有货变为 0，需要重新分配");
+  } else if (previous.realStock > 0 && current.realStock !== previous.realStock) {
+    const delta = Math.abs(current.realStock - previous.realStock) / previous.realStock;
+    if (delta >= thresholds.changeThresholdPercent / 100) {
+      const label = current.realStock > previous.realStock ? "上升" : "下降";
+      reasons.push(`真实库存${label} ${Math.round(delta * 100)}% 需要重新分配`);
     }
-  });
-
-  if (previous.allocatable > 0 && current.allocatable === 0) {
-    reasons.push("allocatable 从有货变为 0，原分配失效");
-  } else if (previous.allocatable >= 3 && current.allocatable < 3) {
-    reasons.push("allocatable 由 ≥3 降为 <3，约束变化");
   }
 
   return { needsRecalc: reasons.length > 0, reasons };

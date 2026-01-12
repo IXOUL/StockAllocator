@@ -10,10 +10,9 @@ interface ResultsTableProps {
 function StatusPills({ record }: { record: AllocationResult }) {
   return (
     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-      {record.allocationChanged && <span className="pill info">分配变动</span>}
+      {(record.needsRecalc || record.allocationChanged) && <span className="pill info">分配变动</span>}
       {record.totalStockDropOnly && <span className="pill warn">总库存下降</span>}
       {record.lowStock && <span className="pill danger">低库存</span>}
-      {record.needsRecalc && <span className="pill warn">需要重算</span>}
       {record.missingPrev && <span className="pill muted">无上一周基准</span>}
       {record.reasons.map((r) => (
         <span key={r} className="tag">

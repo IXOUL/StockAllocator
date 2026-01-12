@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useWeeklyDataContext } from "../providers/WeeklyDataProvider";
 import { ExportButton } from "../components/ExportButton";
 import { ResultsTable } from "../components/ResultsTable";
+import { AllocationResult } from "../lib/types";
 
 export default function HistoryPage() {
   const {
@@ -17,6 +18,45 @@ export default function HistoryPage() {
     deleteStored
   } = useWeeklyDataContext();
   const [selectedWeek, setSelectedWeek] = useState<string | undefined>();
+  const lowStockRecords = useMemo(() => records.filter((r) => r.lowStock), [records]);
+  const reallocationRecords = useMemo(() => records.filter((r) => r.allocationChanged), [records]);
+  const sortedReallocationRecords = useMemo(
+    () => [...reallocationRecords].sort((a, b) => a.sku.localeCompare(b.sku)),
+    [reallocationRecords]
+  );
+  const reallocationExportBaseColumns = useMemo(
+    () => [
+      { key: "sku", label: "sku", get: (r: AllocationResult) => r.sku },
+      { key: "name", label: "name", get: (r: AllocationResult) => r.name ?? "" },
+      { key: "year", label: "year", get: (r: AllocationResult) => r.year ?? "" },
+      { key: "allocatable", label: "allocatable", get: (r: AllocationResult) => r.allocatable },
+      { key: "xhsListing", label: "xhsListing", get: (r: AllocationResult) => r.xhsListing },
+      { key: "tbListing", label: "tbListing", get: (r: AllocationResult) => r.tbListing },
+      { key: "yzListing", label: "yzListing", get: (r: AllocationResult) => r.yzListing },
+      { key: "lowStock", label: "lowStock", get: (r: AllocationResult) => r.lowStock },
+      { key: "reasons", label: "reasons", get: (r: AllocationResult) => r.reasons.join("; ") }
+    ],
+    []
+  );
+  const reallocationExportWithStockColumns = useMemo(
+    () => [
+      { key: "totalStock", label: "totalStock", get: (r: AllocationResult) => r.totalStock },
+      { key: "platformFulfillment", label: "platformFulfillment", get: (r: AllocationResult) => r.platformFulfillment },
+      { key: "realStock", label: "realStock", get: (r: AllocationResult) => r.realStock },
+      { key: "xhsPending", label: "xhsPending", get: (r: AllocationResult) => r.xhsPending },
+      { key: "tbPending", label: "tbPending", get: (r: AllocationResult) => r.tbPending },
+      { key: "yzPending", label: "yzPending", get: (r: AllocationResult) => r.yzPending }
+    ],
+    []
+  );
+  const reallocationExportColumns = useMemo(
+    () => [...reallocationExportBaseColumns, ...reallocationExportWithStockColumns],
+    [reallocationExportBaseColumns, reallocationExportWithStockColumns]
+  );
+  const sortedRecords = useMemo(
+    () => [...records].sort((a, b) => a.sku.localeCompare(b.sku)),
+    [records]
+  );
 
   const handleLoadHistory = (id: string) => {
     setSelectedWeek(id);
@@ -69,7 +109,23 @@ export default function HistoryPage() {
         )}
       </div>
 
-      <ExportButton weekId={selectedWeek || lastWeekId || ""} records={records} />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "12px 0" }}>
+        <ExportButton weekId={selectedWeek || lastWeekId || ""} records={sortedRecords} label="全部结果" />
+        <ExportButton
+          weekId={selectedWeek || lastWeekId || ""}
+          records={sortedReallocationRecords}
+          label="重新分配结果（隐藏库存/待发）"
+          filenamePrefix="reallocated"
+          columns={reallocationExportBaseColumns}
+        />
+        <ExportButton
+          weekId={selectedWeek || lastWeekId || ""}
+          records={sortedReallocationRecords}
+          label="重新分配结果（含库存/待发）"
+          filenamePrefix="reallocated_with_stock"
+          columns={reallocationExportColumns}
+        />
+      </div>
       <ResultsTable records={records} />
     </main>
   );
