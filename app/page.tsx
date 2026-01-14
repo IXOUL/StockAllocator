@@ -22,6 +22,7 @@ function todayWeekId(): string {
 function HomeContent() {
   const [weekId, setWeekId] = useState(() => todayWeekId());
   const [weekIdPrev, setWeekIdPrev] = useState("");
+  const [weekIdPrevTouched, setWeekIdPrevTouched] = useState(false);
   const [year, setYear] = useState("2025");
   const [thresholds, setThresholds] = useState<Thresholds>(DEFAULT_THRESHOLDS);
   const [ratios, setRatios] = useState(DEFAULT_RATIOS);
@@ -125,6 +126,11 @@ function HomeContent() {
     }
   }, [weekFromUrl, loadStoredWeek, hydrateFromOutput, weekIdTouched]);
 
+  useEffect(() => {
+    if (weekIdPrevTouched || weekIdPrev || storedWeeks.length === 0) return;
+    setWeekIdPrev(storedWeeks[storedWeeks.length - 1]);
+  }, [weekIdPrevTouched, weekIdPrev, storedWeeks]);
+
   const handleProcessUpload = async () => {
     if (!validate()) return;
     if (!selectedFile) {
@@ -174,13 +180,19 @@ function HomeContent() {
           setWeekIdTouched(true);
           setWeekId(v);
         }}
-        onWeekIdPrevChange={setWeekIdPrev}
+        onWeekIdPrevChange={(v) => {
+          setWeekIdPrevTouched(true);
+          setWeekIdPrev(v);
+        }}
         onYearChange={setYear}
         onThresholdsChange={setThresholds}
         onFilePicked={setSelectedFile}
         onProcess={handleProcessUpload}
         storedWeeks={storedWeeks}
-        onWeekIdPrevSelect={setWeekIdPrev}
+        onWeekIdPrevSelect={(v) => {
+          setWeekIdPrevTouched(true);
+          setWeekIdPrev(v);
+        }}
       />
       <div className="card" style={{ marginBottom: 12 }}>
         <RatioInput ratios={ratios} onChange={setRatios} />
