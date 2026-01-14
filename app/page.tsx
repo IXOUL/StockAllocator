@@ -6,6 +6,7 @@ import { ExportButton } from "./components/ExportButton";
 import { ResultsTable } from "./components/ResultsTable";
 import { RatioInput } from "./components/RatioInput";
 import { DEFAULT_PENDING_CONFIG, DEFAULT_RATIOS, DEFAULT_THRESHOLDS } from "./lib/constants";
+import { buildStyleGroupKey } from "./lib/sku";
 import { AllocationResult, PendingDeductConfig, Thresholds, WeeklyParams } from "./lib/types";
 import { useWeeklyDataContext } from "./providers/WeeklyDataProvider";
 import { useSearchParams } from "next/navigation";
@@ -46,10 +47,18 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const weekFromUrl = searchParams.get("week");
   const lowStockRecords = useMemo(() => records.filter((r) => r.lowStock), [records]);
-  const reallocationRecords = useMemo(() => records.filter((r) => r.allocationChanged), [records]);
-  const sortedReallocationRecords = useMemo(
-    () => [...reallocationRecords].sort((a, b) => a.sku.localeCompare(b.sku)),
-    [reallocationRecords]
+  const reallocationGroupKeys = useMemo(() => {
+    const keys = new Set<string>();
+    records.forEach((record) => {
+      if (record.allocationChanged) {
+        keys.add(buildStyleGroupKey(record.sku, record.year));
+      }
+    });
+    return keys;
+  }, [records]);
+  const reallocationRecords = useMemo(
+    () => records.filter((record) => reallocationGroupKeys.has(buildStyleGroupKey(record.sku, record.year))),
+    [records, reallocationGroupKeys]
   );
   const reallocationExportBaseColumns = useMemo(
     () => [
@@ -159,7 +168,6 @@ function HomeContent() {
         weekIdPrev={weekIdPrev}
         year={year}
         thresholds={thresholds}
-        pendingConfig={pendingConfig}
         loading={loading}
         formError={formError}
         onWeekIdChange={(v) => {
@@ -169,7 +177,6 @@ function HomeContent() {
         onWeekIdPrevChange={setWeekIdPrev}
         onYearChange={setYear}
         onThresholdsChange={setThresholds}
-        onPendingConfigChange={setPendingConfig}
         onFilePicked={setSelectedFile}
         onProcess={handleProcessUpload}
         storedWeeks={storedWeeks}
@@ -225,14 +232,14 @@ function HomeContent() {
           <ExportButton weekId={weekId} records={sortedRecords} label="全部结果" />
           <ExportButton
             weekId={weekId}
-            records={sortedReallocationRecords}
+            records={reallocationRecords}
             label="重新分配结果（隐藏库存/待发）"
             filenamePrefix="reallocated"
             columns={reallocationExportBaseColumns}
           />
           <ExportButton
             weekId={weekId}
-            records={sortedReallocationRecords}
+            records={reallocationRecords}
             label="重新分配结果（含库存/待发）"
             filenamePrefix="reallocated_with_stock"
             columns={reallocationExportColumns}

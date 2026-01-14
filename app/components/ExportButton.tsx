@@ -1,5 +1,6 @@
 "use client";
 
+import * as XLSX from "xlsx-js-style";
 import { AllocationResult } from "../lib/types";
 
 interface ExportColumn {
@@ -26,38 +27,83 @@ function download(filename: string, data: BlobPart, type: string) {
   URL.revokeObjectURL(url);
 }
 
-function csvEscape(value: unknown): string {
-  if (value === undefined || value === null) return "";
-  const str = String(value);
-  if (!/[",\n]/.test(str)) return str;
-  return `"${str.replace(/"/g, "\"\"")}"`;
+const defaultColumns: ExportColumn[] = [
+  { key: "sku", label: "sku", get: (r) => r.sku },
+  { key: "name", label: "name", get: (r) => r.name ?? "" },
+  { key: "year", label: "year", get: (r) => r.year ?? "" },
+  { key: "totalStock", label: "totalStock", get: (r) => r.totalStock },
+  { key: "platformFulfillment", label: "platformFulfillment", get: (r) => r.platformFulfillment },
+  { key: "realStock", label: "realStock", get: (r) => r.realStock },
+  { key: "xhsPending", label: "xhsPending", get: (r) => r.xhsPending },
+  { key: "tbPending", label: "tbPending", get: (r) => r.tbPending },
+  { key: "yzPending", label: "yzPending", get: (r) => r.yzPending },
+  { key: "allocatable", label: "allocatable", get: (r) => r.allocatable },
+  { key: "xhsListing", label: "xhsListing", get: (r) => r.xhsListing },
+  { key: "tbListing", label: "tbListing", get: (r) => r.tbListing },
+  { key: "yzListing", label: "yzListing", get: (r) => r.yzListing },
+  { key: "lowStock", label: "lowStock", get: (r) => r.lowStock },
+  { key: "needsRecalc", label: "needsRecalc", get: (r) => r.needsRecalc },
+  { key: "reasons", label: "reasons", get: (r) => r.reasons.join("; ") }
+];
+
+type CellStyle = {
+  fill?: {
+    patternType?: "solid";
+    fgColor?: { rgb: string };
+  };
+  font?: { bold?: boolean };
+  alignment?: { vertical?: "center"; horizontal?: "center" | "left" | "right" };
+};
+
+const headerStyle: CellStyle = {
+  font: { bold: true },
+  fill: { patternType: "solid", fgColor: { rgb: "F1F5F9" } },
+  alignment: { vertical: "center" }
+};
+
+const rowStyles = {
+  changed: { fill: { patternType: "solid", fgColor: { rgb: "CFFAFE" } } },
+  drop: { fill: { patternType: "solid", fgColor: { rgb: "FFEDD5" } } },
+  low: { fill: { patternType: "solid", fgColor: { rgb: "FEE2E2" } } },
+  recalc: { fill: { patternType: "solid", fgColor: { rgb: "DBEAFE" } } }
+} satisfies Record<string, CellStyle>;
+
+function getRowStyle(record: AllocationResult): CellStyle | undefined {
+  if (record.allocationChanged) return rowStyles.changed;
+  if (record.totalStockDropOnly) return rowStyles.drop;
+  if (record.lowStock) return rowStyles.low;
+  if (record.needsRecalc) return rowStyles.recalc;
+  return undefined;
 }
 
-function toCsv(records: AllocationResult[], columns?: ExportColumn[]): string {
-  const defaultColumns: ExportColumn[] = [
-    { key: "sku", label: "sku", get: (r) => r.sku },
-    { key: "name", label: "name", get: (r) => r.name ?? "" },
-    { key: "year", label: "year", get: (r) => r.year ?? "" },
-    { key: "totalStock", label: "totalStock", get: (r) => r.totalStock },
-    { key: "platformFulfillment", label: "platformFulfillment", get: (r) => r.platformFulfillment },
-    { key: "realStock", label: "realStock", get: (r) => r.realStock },
-    { key: "xhsPending", label: "xhsPending", get: (r) => r.xhsPending },
-    { key: "tbPending", label: "tbPending", get: (r) => r.tbPending },
-    { key: "yzPending", label: "yzPending", get: (r) => r.yzPending },
-    { key: "allocatable", label: "allocatable", get: (r) => r.allocatable },
-    { key: "xhsListing", label: "xhsListing", get: (r) => r.xhsListing },
-    { key: "tbListing", label: "tbListing", get: (r) => r.tbListing },
-    { key: "yzListing", label: "yzListing", get: (r) => r.yzListing },
-    { key: "lowStock", label: "lowStock", get: (r) => r.lowStock },
-    { key: "needsRecalc", label: "needsRecalc", get: (r) => r.needsRecalc },
-    { key: "reasons", label: "reasons", get: (r) => r.reasons.join("; ") }
-  ];
+function toWorkbook(records: AllocationResult[], columns?: ExportColumn[]) {
   const activeColumns = columns?.length ? columns : defaultColumns;
-  const headers = activeColumns.map((c) => c.label);
-  const lines = records.map((record) =>
-    activeColumns.map((col) => csvEscape(col.get(record))).join(",")
-  );
-  return [headers.join(","), ...lines].join("\n");
+  const data: Array<Array<string | number | boolean | null | undefined>> = [
+    activeColumns.map((col) => col.label),
+    ...records.map((record) => activeColumns.map((col) => col.get(record)))
+  ];
+  const sheet = XLSX.utils.aoa_to_sheet(data);
+  const range = XLSX.utils.decode_range(sheet["!ref"] ?? "A1");
+
+  for (let c = range.s.c; c <= range.e.c; c += 1) {
+    const addr = XLSX.utils.encode_cell({ r: 0, c });
+    const cell = sheet[addr];
+    if (cell) cell.s = headerStyle as any;
+  }
+
+  for (let r = 1; r <= records.length; r += 1) {
+    const rowStyle = getRowStyle(records[r - 1]);
+    if (!rowStyle) continue;
+    for (let c = range.s.c; c <= range.e.c; c += 1) {
+      const addr = XLSX.utils.encode_cell({ r, c });
+      const cell = sheet[addr];
+      if (cell) cell.s = rowStyle as any;
+    }
+  }
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, sheet, "Export");
+  return workbook;
 }
 
 export function ExportButton({ weekId, records, label, filenamePrefix, columns }: ExportButtonProps) {
@@ -85,9 +131,17 @@ export function ExportButton({ weekId, records, label, filenamePrefix, columns }
       </button>
       <button
         className="secondary"
-        onClick={() => download(`${filenameBase}.csv`, toCsv(records, columns), "text/csv")}
+        onClick={() => {
+          const workbook = toWorkbook(records, columns);
+          const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+          download(
+            `${filenameBase}.xlsx`,
+            buffer,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          );
+        }}
       >
-        {buttonLabel} CSV
+        {buttonLabel} Excel
       </button>
     </div>
   );

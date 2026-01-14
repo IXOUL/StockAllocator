@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useWeeklyDataContext } from "../providers/WeeklyDataProvider";
 import { ExportButton } from "../components/ExportButton";
 import { ResultsTable } from "../components/ResultsTable";
+import { buildStyleGroupKey } from "../lib/sku";
 import { AllocationResult } from "../lib/types";
 
 export default function HistoryPage() {
@@ -19,10 +20,18 @@ export default function HistoryPage() {
   } = useWeeklyDataContext();
   const [selectedWeek, setSelectedWeek] = useState<string | undefined>();
   const lowStockRecords = useMemo(() => records.filter((r) => r.lowStock), [records]);
-  const reallocationRecords = useMemo(() => records.filter((r) => r.allocationChanged), [records]);
-  const sortedReallocationRecords = useMemo(
-    () => [...reallocationRecords].sort((a, b) => a.sku.localeCompare(b.sku)),
-    [reallocationRecords]
+  const reallocationGroupKeys = useMemo(() => {
+    const keys = new Set<string>();
+    records.forEach((record) => {
+      if (record.allocationChanged) {
+        keys.add(buildStyleGroupKey(record.sku, record.year));
+      }
+    });
+    return keys;
+  }, [records]);
+  const reallocationRecords = useMemo(
+    () => records.filter((record) => reallocationGroupKeys.has(buildStyleGroupKey(record.sku, record.year))),
+    [records, reallocationGroupKeys]
   );
   const reallocationExportBaseColumns = useMemo(
     () => [
@@ -113,14 +122,14 @@ export default function HistoryPage() {
         <ExportButton weekId={selectedWeek || lastWeekId || ""} records={sortedRecords} label="全部结果" />
         <ExportButton
           weekId={selectedWeek || lastWeekId || ""}
-          records={sortedReallocationRecords}
+          records={reallocationRecords}
           label="重新分配结果（隐藏库存/待发）"
           filenamePrefix="reallocated"
           columns={reallocationExportBaseColumns}
         />
         <ExportButton
           weekId={selectedWeek || lastWeekId || ""}
-          records={sortedReallocationRecords}
+          records={reallocationRecords}
           label="重新分配结果（含库存/待发）"
           filenamePrefix="reallocated_with_stock"
           columns={reallocationExportColumns}

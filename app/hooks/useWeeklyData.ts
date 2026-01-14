@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 import { allocateListings, computeRealStock, detectTriggers } from "../lib/allocation";
 import { DEFAULT_RATIOS } from "../lib/constants";
+import { buildStyleGroupKey } from "../lib/sku";
 import { loadProcessedOutput, saveProcessedOutput } from "../lib/storage";
 import { AllocationResult, ProcessedOutput, RawRecord, WeeklyParams } from "../lib/types";
 
@@ -174,7 +175,55 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
   });
 
   const order = { current: 0, previous: 1, other: 2 } as const;
+  const groupMeta = new Map<
+    string,
+    {
+      needsRecalc: boolean;
+      lowStock: boolean;
+      allocationChanged: boolean;
+      yearGroup: AllocationResult["yearGroup"];
+      maxRealStock: number;
+    }
+  >();
+  records.forEach((record) => {
+    const key = buildStyleGroupKey(record.sku, record.year);
+    const current = groupMeta.get(key);
+    if (!current) {
+      groupMeta.set(key, {
+        needsRecalc: record.needsRecalc || record.allocationChanged,
+        lowStock: record.lowStock,
+        allocationChanged: record.allocationChanged,
+        yearGroup: record.yearGroup,
+        maxRealStock: record.realStock
+      });
+      return;
+    }
+    current.needsRecalc = current.needsRecalc || record.needsRecalc || record.allocationChanged;
+    current.lowStock = current.lowStock || record.lowStock;
+    current.allocationChanged = current.allocationChanged || record.allocationChanged;
+    current.maxRealStock = Math.max(current.maxRealStock, record.realStock);
+  });
   records.sort((a, b) => {
+    const aKey = buildStyleGroupKey(a.sku, a.year);
+    const bKey = buildStyleGroupKey(b.sku, b.year);
+    if (aKey !== bKey) {
+      const metaA = groupMeta.get(aKey);
+      const metaB = groupMeta.get(bKey);
+      if (metaA && metaB) {
+        if (metaA.needsRecalc !== metaB.needsRecalc) return Number(metaB.needsRecalc) - Number(metaA.needsRecalc);
+        if (metaA.lowStock !== metaB.lowStock) return Number(metaB.lowStock) - Number(metaA.lowStock);
+        const aStable = !metaA.needsRecalc && !metaA.lowStock && !metaA.allocationChanged;
+        const bStable = !metaB.needsRecalc && !metaB.lowStock && !metaB.allocationChanged;
+        if (aStable !== bStable) return Number(aStable) - Number(bStable);
+        if (metaA.allocationChanged !== metaB.allocationChanged)
+          return Number(metaB.allocationChanged) - Number(metaA.allocationChanged);
+        const groupDiff = order[metaA.yearGroup] - order[metaB.yearGroup];
+        if (groupDiff !== 0) return groupDiff;
+        if (metaB.maxRealStock !== metaA.maxRealStock) return metaB.maxRealStock - metaA.maxRealStock;
+      }
+      return aKey.localeCompare(bKey);
+    }
+
     if (a.needsRecalc !== b.needsRecalc) return Number(b.needsRecalc) - Number(a.needsRecalc);
     if (a.lowStock !== b.lowStock) return Number(b.lowStock) - Number(a.lowStock);
     const aStable = !a.needsRecalc && !a.lowStock && !a.allocationChanged;

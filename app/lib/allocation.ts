@@ -125,6 +125,8 @@ export function detectTriggers(
   const reasons: string[] = [];
   if (previous.realStock > 0 && current.realStock === 0) {
     reasons.push("真实库存从有货变为 0，需要重新分配");
+  } else if (previous.realStock === 0 && current.realStock > 0) {
+    reasons.push("真实库存从无到有，需要重新分配");
   } else if (previous.realStock > 0 && current.realStock !== previous.realStock) {
     const delta = Math.abs(current.realStock - previous.realStock) / previous.realStock;
     if (delta >= thresholds.changeThresholdPercent / 100) {

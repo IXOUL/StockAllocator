@@ -2,21 +2,19 @@
 
 import { useRef } from "react";
 import { DEFAULT_THRESHOLDS } from "../lib/constants";
-import { PendingDeductConfig, Thresholds } from "../lib/types";
+import { Thresholds } from "../lib/types";
 
 interface ControlsPanelProps {
   weekId: string;
   weekIdPrev?: string;
   year: string;
   thresholds: Thresholds;
-  pendingConfig: PendingDeductConfig;
   loading: boolean;
   formError?: string;
   onWeekIdChange: (value: string) => void;
   onWeekIdPrevChange: (value: string) => void;
   onYearChange: (value: string) => void;
   onThresholdsChange: (value: Thresholds) => void;
-  onPendingConfigChange: (value: PendingDeductConfig) => void;
   onFilePicked: (file: File | null) => void;
   onProcess: () => void;
   storedWeeks?: string[];
@@ -28,14 +26,12 @@ export function ControlsPanel({
   weekIdPrev,
   year,
   thresholds,
-  pendingConfig,
   loading,
   formError,
   onWeekIdChange,
   onWeekIdPrevChange,
   onYearChange,
   onThresholdsChange,
-  onPendingConfigChange,
   onFilePicked,
   onProcess,
   storedWeeks,
@@ -45,13 +41,6 @@ export function ControlsPanel({
   const formatToday = () => {
     const d = new Date();
     return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
-  };
-
-  const handleStrategyChange = (strategy: PendingDeductConfig["strategy"]) => {
-    onPendingConfigChange({
-      strategy,
-      customFields: strategy === "custom" ? ["xhs", "tb", "yz"] : undefined
-    });
   };
 
   return (
@@ -123,20 +112,6 @@ export function ControlsPanel({
               }
             />
           </div>
-        </div>
-        <div className="field">
-          <label>待发扣减策略</label>
-          <select
-            value={pendingConfig.strategy}
-            onChange={(e) => handleStrategyChange(e.target.value as PendingDeductConfig["strategy"])}
-          >
-            <option value="all">扣减全部待发（默认）</option>
-            <option value="none">不扣待发</option>
-            <option value="custom">自定义字段</option>
-          </select>
-          {pendingConfig.strategy === "custom" && (
-            <span className="tag">当前：{pendingConfig.customFields?.join(", ")}</span>
-          )}
         </div>
         <div className="field upload-stack">
           <label>上传 Excel</label>
