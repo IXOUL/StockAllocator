@@ -62,6 +62,7 @@ const headerStyle: CellStyle = {
 };
 
 const rowStyles = {
+  negative: { fill: { patternType: "solid", fgColor: { rgb: "EDE9FE" } } },
   changed: { fill: { patternType: "solid", fgColor: { rgb: "CFFAFE" } } },
   drop: { fill: { patternType: "solid", fgColor: { rgb: "FFEDD5" } } },
   low: { fill: { patternType: "solid", fgColor: { rgb: "FEE2E2" } } },
@@ -69,6 +70,7 @@ const rowStyles = {
 } satisfies Record<string, CellStyle>;
 
 function getRowStyle(record: AllocationResult): CellStyle | undefined {
+  if (record.realStock < 0) return rowStyles.negative;
   if (record.allocationChanged) return rowStyles.changed;
   if (record.totalStockDropOnly) return rowStyles.drop;
   if (record.lowStock) return rowStyles.low;

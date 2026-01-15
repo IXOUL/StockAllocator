@@ -92,6 +92,7 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
 
   const records: AllocationResult[] = rawRecords.map((row) => {
     const realStock = computeRealStock(row.totalStock, row.platformFulfillment);
+    const negativeReasons = realStock < 0 ? ["真实库存为负数"] : [];
     const prev = prevMap.get(row.sku);
     // 现阶段口径：allocatable 等同于真实库存
     const allocatable = realStock;
@@ -127,7 +128,7 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
       prevSnapshot,
       lowStock: !isZeroStockCarryover && realStock < params.thresholds.lowStockThreshold,
       needsRecalc: false,
-      reasons: []
+      reasons: negativeReasons
     };
 
     if (prev && realStock === prev.realStock) {
@@ -139,7 +140,7 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
         allocationChanged: false,
         totalStockDropOnly: false,
         needsRecalc: false,
-        reasons: ["真实库存未变化，沿用上一周分配"],
+        reasons: [...negativeReasons, "真实库存未变化，沿用上一周分配"],
         missingPrev: false
       };
     }
@@ -147,6 +148,7 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
     const triggers = detectTriggers(base, prev, params.thresholds);
     const prevListingSum = prev ? prev.xhsListing + prev.tbListing + prev.yzListing : 0;
     const canReusePrev = !!prev && !triggers.needsRecalc && prevListingSum <= allocatable;
+    const triggerReasons = [...negativeReasons, ...triggers.reasons];
 
     const finalListings = canReusePrev
       ? {
@@ -169,7 +171,7 @@ function buildRecords(rawRecords: RawRecord[], params: WeeklyParams): ParseOutco
       allocationChanged,
       totalStockDropOnly: totalStockDropOnly && !allocationChanged,
       needsRecalc: triggers.needsRecalc,
-      reasons: canReusePrev ? [...triggers.reasons, "沿用上一周分配（未超阈值）"] : triggers.reasons,
+      reasons: canReusePrev ? [...triggerReasons, "沿用上一周分配（未超阈值）"] : triggerReasons,
       missingPrev: triggers.missingPrev
     };
   });

@@ -15,7 +15,7 @@ function StatusPills({ record }: { record: AllocationResult }) {
       {record.lowStock && <span className="pill danger">低库存</span>}
       {record.missingPrev && <span className="pill muted">无上一周基准</span>}
       {record.reasons.map((r) => (
-        <span key={r} className="tag">
+        <span key={r} className={`tag${r === "真实库存为负数" ? " negative" : ""}`}>
           {r}
         </span>
       ))}
@@ -82,15 +82,18 @@ export function ResultsTable({ records }: ResultsTableProps) {
         </thead>
         <tbody>
           {records.map((record) => {
-            const rowClass = record.allocationChanged
-              ? "row-changed"
-              : record.totalStockDropOnly
-              ? "row-drop"
-              : record.lowStock
-              ? "row-low"
-              : record.needsRecalc
-              ? "row-recalc"
-              : "";
+            const rowClass =
+              record.realStock < 0
+                ? "row-negative"
+                : record.allocationChanged
+                ? "row-changed"
+                : record.totalStockDropOnly
+                ? "row-drop"
+                : record.lowStock
+                ? "row-low"
+                : record.needsRecalc
+                ? "row-recalc"
+                : "";
             return (
               <React.Fragment key={record.sku}>
                 <tr className={rowClass}>

@@ -1,7 +1,7 @@
 import { AllocationRatios, AllocationResult, PendingDeductConfig, RawRecord, Thresholds } from "./types";
 
 export function computeRealStock(totalStock: number, platformFulfillment: number): number {
-  return Math.max(0, totalStock - platformFulfillment);
+  return totalStock - platformFulfillment;
 }
 
 export function computeAllocatable(

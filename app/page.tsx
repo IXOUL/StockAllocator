@@ -58,7 +58,11 @@ function HomeContent() {
     return keys;
   }, [records]);
   const reallocationRecords = useMemo(
-    () => records.filter((record) => reallocationGroupKeys.has(buildStyleGroupKey(record.sku, record.year))),
+    () =>
+      records.filter((record) => {
+        if (record.realStock < 0) return true;
+        return reallocationGroupKeys.has(buildStyleGroupKey(record.sku, record.year));
+      }),
     [records, reallocationGroupKeys]
   );
   const reallocationExportBaseColumns = useMemo(
