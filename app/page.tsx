@@ -7,6 +7,7 @@ import { ResultsTable } from "./components/ResultsTable";
 import { RatioInput } from "./components/RatioInput";
 import { DEFAULT_PENDING_CONFIG, DEFAULT_RATIOS, DEFAULT_THRESHOLDS } from "./lib/constants";
 import { buildStyleGroupKey } from "./lib/sku";
+import { compareByYearDesc } from "./lib/sort";
 import { AllocationResult, PendingDeductConfig, Thresholds, WeeklyParams } from "./lib/types";
 import { useWeeklyDataContext } from "./providers/WeeklyDataProvider";
 import { useSearchParams } from "next/navigation";
@@ -94,9 +95,10 @@ function HomeContent() {
     () => [...reallocationExportBaseColumns, ...reallocationExportWithStockColumns],
     [reallocationExportBaseColumns, reallocationExportWithStockColumns]
   );
-  const sortedRecords = useMemo(
-    () => [...records].sort((a, b) => a.sku.localeCompare(b.sku)),
-    [records]
+  const sortedRecords = useMemo(() => [...records].sort(compareByYearDesc), [records]);
+  const sortedReallocationRecords = useMemo(
+    () => [...reallocationRecords].sort(compareByYearDesc),
+    [reallocationRecords]
   );
 
   const params: WeeklyParams = useMemo(
@@ -248,14 +250,14 @@ function HomeContent() {
           <ExportButton weekId={weekId} records={sortedRecords} label="全部结果" />
           <ExportButton
             weekId={weekId}
-            records={reallocationRecords}
+            records={sortedReallocationRecords}
             label="重新分配结果（隐藏库存/待发）"
             filenamePrefix="reallocated"
             columns={reallocationExportBaseColumns}
           />
           <ExportButton
             weekId={weekId}
-            records={reallocationRecords}
+            records={sortedReallocationRecords}
             label="重新分配结果（含库存/待发）"
             filenamePrefix="reallocated_with_stock"
             columns={reallocationExportColumns}

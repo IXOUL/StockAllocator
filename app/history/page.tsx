@@ -5,6 +5,7 @@ import { useWeeklyDataContext } from "../providers/WeeklyDataProvider";
 import { ExportButton } from "../components/ExportButton";
 import { ResultsTable } from "../components/ResultsTable";
 import { buildStyleGroupKey } from "../lib/sku";
+import { compareByYearDesc } from "../lib/sort";
 import { AllocationResult } from "../lib/types";
 
 export default function HistoryPage() {
@@ -66,9 +67,10 @@ export default function HistoryPage() {
     () => [...reallocationExportBaseColumns, ...reallocationExportWithStockColumns],
     [reallocationExportBaseColumns, reallocationExportWithStockColumns]
   );
-  const sortedRecords = useMemo(
-    () => [...records].sort((a, b) => a.sku.localeCompare(b.sku)),
-    [records]
+  const sortedRecords = useMemo(() => [...records].sort(compareByYearDesc), [records]);
+  const sortedReallocationRecords = useMemo(
+    () => [...reallocationRecords].sort(compareByYearDesc),
+    [reallocationRecords]
   );
 
   const handleLoadHistory = (id: string) => {
@@ -126,14 +128,14 @@ export default function HistoryPage() {
         <ExportButton weekId={selectedWeek || lastWeekId || ""} records={sortedRecords} label="全部结果" />
         <ExportButton
           weekId={selectedWeek || lastWeekId || ""}
-          records={reallocationRecords}
+          records={sortedReallocationRecords}
           label="重新分配结果（隐藏库存/待发）"
           filenamePrefix="reallocated"
           columns={reallocationExportBaseColumns}
         />
         <ExportButton
           weekId={selectedWeek || lastWeekId || ""}
-          records={reallocationRecords}
+          records={sortedReallocationRecords}
           label="重新分配结果（含库存/待发）"
           filenamePrefix="reallocated_with_stock"
           columns={reallocationExportColumns}
