@@ -20,7 +20,7 @@
 
 body {
   margin: 0;
-  background: linear-gradient(180deg, #f7f8fc 0%, #eef2f7 100%);
+  background: #DDCDAE;
   color: var(--text);
   font-family: "Atkinson Hyperlegible", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
@@ -82,7 +82,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: -30px;
 }
 
 .page-brand {
@@ -92,8 +92,8 @@ body {
 }
 
 .page-brand img {
-  width: 36px;
-  height: 36px;
+  width: 150px;
+  height: 150px;
 }
 
 .page-brand-title {
@@ -116,26 +116,26 @@ body {
   align-items: center;
   gap: 12px;
   font-weight: 600;
-  color: #475569;
+  color: #0b1016;
 }
 
 .page-nav a {
   padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  transition: background 120ms ease, border 120ms ease, color 120ms ease;
+  border-radius: 8px;
+  border: none;
+  transition: background 120ms ease, color 120ms ease;
 }
 
 .page-nav a:hover {
-  background: #eef2ff;
-  border-color: #c7d2fe;
-  color: #1d4ed8;
+  background: #ddcdae;
+  color: #a45b2f;
+  letter-spacing: 0.06em;
 }
 
 
 #controls {
   scroll-margin-top: 50px;
-  margin-top: 28px;
+  margin-top: 50px;
 }
 
 .history-nav {
@@ -166,7 +166,7 @@ body {
 }
 
 .subnav a {
-  color: #1d4ed8;
+  color: #9D9CA7;
 }
 
 .ratio-row {
@@ -188,11 +188,11 @@ a {
 main {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 48px 72px 96px;
+  padding: 12px 72px 96px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 0px;
 }
 
 h1 {
@@ -293,9 +293,13 @@ p.lead {
 }
 
 .btn.primary {
-  background: linear-gradient(135deg, var(--accent), #60a5fa);
-  color: #0b1016;
-  box-shadow: 0 10px 28px rgba(59, 130, 246, 0.28);
+  background: #9d9ca7;
+  color: #000000;
+  box-shadow: 0 10px 28px rgba(31, 41, 55, 0.2);
+}
+
+.btn.primary:hover {
+  letter-spacing: 0.06em;
 }
 
 .btn.ghost {
@@ -364,6 +368,13 @@ p.lead {
   padding: 18px;
 }
 
+.controls-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+
 .controls-grid {
   display: grid;
   gap: 16px 14px;
@@ -399,6 +410,11 @@ p.lead {
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.upload-row input[type="file"] {
+  flex: 0 1 320px;
+  max-width: 320px;
 }
 
 .upload-stack {
@@ -443,9 +459,13 @@ button {
 }
 
 button.primary {
-  background: linear-gradient(135deg, var(--accent), #60a5fa);
-  color: #0b1016;
-  box-shadow: 0 10px 35px rgba(59, 130, 246, 0.35);
+  background: #9d9ca7;
+  color: #000000;
+  box-shadow: 0 10px 28px rgba(31, 41, 55, 0.2);
+}
+
+button.primary:hover:not(:disabled) {
+  letter-spacing: 0.06em;
 }
 
 button.secondary {

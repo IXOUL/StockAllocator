@@ -83,6 +83,18 @@ export default function HistoryPage() {
 
   return (
     <main>
+      <div className="page-header">
+        <div className="page-brand">
+          <img src="/logo.png" alt="logo" />
+          <div>
+            <div className="page-brand-title">Eazypezy Stock Distribution Manager</div>
+          </div>
+        </div>
+        <nav className="page-nav">
+          <a href="/">数据总览</a>
+          <a href="/history">查看历史</a>
+        </nav>
+      </div>
       <h1>历史数据</h1>
       <p className="lead">点击周次查看已保存的结果，可导出或清空。</p>
 

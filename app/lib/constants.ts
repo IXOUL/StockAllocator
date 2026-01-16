@@ -1,6 +1,6 @@
 import { AllocationRatios, PendingDeductConfig, Thresholds } from "./types";
 
-export const DEFAULT_RATIOS: AllocationRatios = { xhs: 0.7, tb: 0.2, yz: 0.1 };
+export const DEFAULT_RATIOS: AllocationRatios = { xhs: 70, tb: 20, yz: 10 };
 
 export const DEFAULT_PENDING_CONFIG: PendingDeductConfig = {
   strategy: "all"

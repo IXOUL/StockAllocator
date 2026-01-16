@@ -9,12 +9,14 @@ interface ControlsPanelProps {
   weekIdPrev?: string;
   year: string;
   thresholds: Thresholds;
+  ratios: { xhs: number; tb: number; yz: number };
   loading: boolean;
   formError?: string;
   onWeekIdChange: (value: string) => void;
   onWeekIdPrevChange: (value: string) => void;
   onYearChange: (value: string) => void;
   onThresholdsChange: (value: Thresholds) => void;
+  onRatiosChange: (value: { xhs: number; tb: number; yz: number }) => void;
   onFilePicked: (file: File | null) => void;
   onProcess: () => void;
   storedWeeks?: string[];
@@ -26,12 +28,14 @@ export function ControlsPanel({
   weekIdPrev,
   year,
   thresholds,
+  ratios,
   loading,
   formError,
   onWeekIdChange,
   onWeekIdPrevChange,
   onYearChange,
   onThresholdsChange,
+  onRatiosChange,
   onFilePicked,
   onProcess,
   storedWeeks,
@@ -44,7 +48,7 @@ export function ControlsPanel({
   };
 
   return (
-    <div className="card controls-card">
+    <div className="controls-panel">
       <div className="controls-grid two-row">
         <div className="field">
           <label>本次Id</label>
@@ -111,6 +115,44 @@ export function ControlsPanel({
                 })
               }
             />
+          </div>
+        </div>
+        <div className="field">
+          <label>平台配比（可自定义，默认 70/20/10）</label>
+          <div className="ratio-row">
+            <label>
+              小红书（%）
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                value={ratios.xhs}
+                onChange={(e) => onRatiosChange({ ...ratios, xhs: Number(e.target.value || 0) })}
+              />
+            </label>
+            <label>
+              淘宝（%）
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                value={ratios.tb}
+                onChange={(e) => onRatiosChange({ ...ratios, tb: Number(e.target.value || 0) })}
+              />
+            </label>
+            <label>
+              有赞（%）
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                value={ratios.yz}
+                onChange={(e) => onRatiosChange({ ...ratios, yz: Number(e.target.value || 0) })}
+              />
+            </label>
           </div>
         </div>
         <div className="field upload-stack">

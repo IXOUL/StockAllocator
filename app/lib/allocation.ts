@@ -33,11 +33,15 @@ export interface ListingAllocations {
 }
 
 function normalizeRatios(ratios: AllocationRatios): AllocationRatios {
-  const sum = ratios.xhs + ratios.tb + ratios.yz || 1;
+  const isPercent = ratios.xhs > 1 || ratios.tb > 1 || ratios.yz > 1;
+  const normalizedInput = isPercent
+    ? { xhs: ratios.xhs / 100, tb: ratios.tb / 100, yz: ratios.yz / 100 }
+    : ratios;
+  const sum = normalizedInput.xhs + normalizedInput.tb + normalizedInput.yz || 1;
   return {
-    xhs: ratios.xhs / sum,
-    tb: ratios.tb / sum,
-    yz: ratios.yz / sum
+    xhs: normalizedInput.xhs / sum,
+    tb: normalizedInput.tb / sum,
+    yz: normalizedInput.yz / sum
   };
 }
 

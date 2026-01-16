@@ -4,7 +4,6 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { ControlsPanel } from "./components/ControlsPanel";
 import { ExportButton } from "./components/ExportButton";
 import { ResultsTable } from "./components/ResultsTable";
-import { RatioInput } from "./components/RatioInput";
 import { DEFAULT_PENDING_CONFIG, DEFAULT_RATIOS, DEFAULT_THRESHOLDS } from "./lib/constants";
 import { buildStyleGroupKey } from "./lib/sku";
 import { compareByYearDesc } from "./lib/sort";
@@ -172,9 +171,9 @@ function HomeContent() {
     <main>
       <div className="page-header">
         <div className="page-brand">
-          <img src="/favicon.png" alt="logo" />
+          <img src="/logo.png" alt="logo" />
           <div>
-            <div className="page-brand-title">Eazypezy Stock Distribution Manager</div>
+            <div className="page-brand-title">Stock Distribution Manager</div>
           </div>
         </div>
         <nav className="page-nav">
@@ -204,12 +203,13 @@ function HomeContent() {
         </div>
       </section>
 
-      <div id="controls">
+      <div id="controls" className="card controls-card">
         <ControlsPanel
           weekId={weekId}
           weekIdPrev={weekIdPrev}
           year={year}
           thresholds={thresholds}
+          ratios={ratios}
           loading={loading}
           formError={formError}
           onWeekIdChange={(v) => {
@@ -222,6 +222,7 @@ function HomeContent() {
           }}
           onYearChange={setYear}
           onThresholdsChange={setThresholds}
+          onRatiosChange={setRatios}
           onFilePicked={setSelectedFile}
           onProcess={handleProcessUpload}
           storedWeeks={storedWeeks}
@@ -230,9 +231,6 @@ function HomeContent() {
             setWeekIdPrev(v);
           }}
         />
-      </div>
-      <div className="card" style={{ marginBottom: 12 }}>
-        <RatioInput ratios={ratios} onChange={setRatios} />
       </div>
 
       {(error || baselineMissing) && (
