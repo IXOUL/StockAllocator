@@ -67,26 +67,26 @@ function HomeContent() {
   );
   const reallocationExportBaseColumns = useMemo(
     () => [
-      { key: "sku", label: "sku", get: (r: AllocationResult) => r.sku },
-      { key: "name", label: "name", get: (r: AllocationResult) => r.name ?? "" },
-      { key: "year", label: "year", get: (r: AllocationResult) => r.year ?? "" },
-      { key: "allocatable", label: "allocatable", get: (r: AllocationResult) => r.allocatable },
-      { key: "xhsListing", label: "xhsListing", get: (r: AllocationResult) => r.xhsListing },
-      { key: "tbListing", label: "tbListing", get: (r: AllocationResult) => r.tbListing },
-      { key: "yzListing", label: "yzListing", get: (r: AllocationResult) => r.yzListing },
-      { key: "lowStock", label: "lowStock", get: (r: AllocationResult) => r.lowStock },
-      { key: "reasons", label: "reasons", get: (r: AllocationResult) => r.reasons.join("; ") }
+      { key: "sku", label: "SKU", get: (r: AllocationResult) => r.sku },
+      { key: "name", label: "名称", get: (r: AllocationResult) => r.name ?? "" },
+      { key: "year", label: "年份", get: (r: AllocationResult) => r.year ?? "" },
+      { key: "allocatable", label: "可分配库存", get: (r: AllocationResult) => r.allocatable },
+      { key: "xhsListing", label: "小红书", get: (r: AllocationResult) => r.xhsListing },
+      { key: "tbListing", label: "淘宝", get: (r: AllocationResult) => r.tbListing },
+      { key: "yzListing", label: "有赞", get: (r: AllocationResult) => r.yzListing },
+      { key: "lowStock", label: "低库存", get: (r: AllocationResult) => r.lowStock },
+      { key: "reasons", label: "原因", get: (r: AllocationResult) => r.reasons.join("; ") }
     ],
     []
   );
   const reallocationExportWithStockColumns = useMemo(
     () => [
-      { key: "totalStock", label: "totalStock", get: (r: AllocationResult) => r.totalStock },
-      { key: "platformFulfillment", label: "platformFulfillment", get: (r: AllocationResult) => r.platformFulfillment },
-      { key: "realStock", label: "realStock", get: (r: AllocationResult) => r.realStock },
-      { key: "xhsPending", label: "xhsPending", get: (r: AllocationResult) => r.xhsPending },
-      { key: "tbPending", label: "tbPending", get: (r: AllocationResult) => r.tbPending },
-      { key: "yzPending", label: "yzPending", get: (r: AllocationResult) => r.yzPending }
+      { key: "totalStock", label: "总库存", get: (r: AllocationResult) => r.totalStock },
+      { key: "platformFulfillment", label: "平台履约", get: (r: AllocationResult) => r.platformFulfillment },
+      { key: "realStock", label: "真实库存", get: (r: AllocationResult) => r.realStock },
+      { key: "xhsPending", label: "小红书待发", get: (r: AllocationResult) => r.xhsPending },
+      { key: "tbPending", label: "淘宝待发", get: (r: AllocationResult) => r.tbPending },
+      { key: "yzPending", label: "有赞待发", get: (r: AllocationResult) => r.yzPending }
     ],
     []
   );

@@ -28,22 +28,22 @@ function download(filename: string, data: BlobPart, type: string) {
 }
 
 const defaultColumns: ExportColumn[] = [
-  { key: "sku", label: "sku", get: (r) => r.sku },
-  { key: "name", label: "name", get: (r) => r.name ?? "" },
-  { key: "year", label: "year", get: (r) => r.year ?? "" },
-  { key: "totalStock", label: "totalStock", get: (r) => r.totalStock },
-  { key: "platformFulfillment", label: "platformFulfillment", get: (r) => r.platformFulfillment },
-  { key: "realStock", label: "realStock", get: (r) => r.realStock },
-  { key: "xhsPending", label: "xhsPending", get: (r) => r.xhsPending },
-  { key: "tbPending", label: "tbPending", get: (r) => r.tbPending },
-  { key: "yzPending", label: "yzPending", get: (r) => r.yzPending },
-  { key: "allocatable", label: "allocatable", get: (r) => r.allocatable },
-  { key: "xhsListing", label: "xhsListing", get: (r) => r.xhsListing },
-  { key: "tbListing", label: "tbListing", get: (r) => r.tbListing },
-  { key: "yzListing", label: "yzListing", get: (r) => r.yzListing },
-  { key: "lowStock", label: "lowStock", get: (r) => r.lowStock },
-  { key: "needsRecalc", label: "needsRecalc", get: (r) => r.needsRecalc },
-  { key: "reasons", label: "reasons", get: (r) => r.reasons.join("; ") }
+  { key: "sku", label: "SKU", get: (r) => r.sku },
+  { key: "name", label: "名称", get: (r) => r.name ?? "" },
+  { key: "year", label: "年份", get: (r) => r.year ?? "" },
+  { key: "totalStock", label: "总库存", get: (r) => r.totalStock },
+  { key: "platformFulfillment", label: "平台履约", get: (r) => r.platformFulfillment },
+  { key: "realStock", label: "真实库存", get: (r) => r.realStock },
+  { key: "xhsPending", label: "小红书待发", get: (r) => r.xhsPending },
+  { key: "tbPending", label: "淘宝待发", get: (r) => r.tbPending },
+  { key: "yzPending", label: "有赞待发", get: (r) => r.yzPending },
+  { key: "allocatable", label: "可分配库存", get: (r) => r.allocatable },
+  { key: "xhsListing", label: "小红书", get: (r) => r.xhsListing },
+  { key: "tbListing", label: "淘宝", get: (r) => r.tbListing },
+  { key: "yzListing", label: "有赞", get: (r) => r.yzListing },
+  { key: "lowStock", label: "低库存", get: (r) => r.lowStock },
+  { key: "needsRecalc", label: "需要重算", get: (r) => r.needsRecalc },
+  { key: "reasons", label: "原因", get: (r) => r.reasons.join("; ") }
 ];
 
 type CellStyle = {
