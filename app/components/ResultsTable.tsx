@@ -33,7 +33,7 @@ export function ResultsTable({ records }: ResultsTableProps) {
 
   if (!records.length) {
     return (
-      <div className="card">
+      <div className="card results-card">
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
           <div style={{ fontWeight: 700, fontSize: 16 }}>分配结果</div>
           <span className="pill muted">暂无数据</span>
@@ -47,7 +47,7 @@ export function ResultsTable({ records }: ResultsTableProps) {
   }
 
   return (
-    <div className="card">
+    <div className="card results-card">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <div style={{ fontWeight: 700, fontSize: 16 }}>分配结果（全部货品）</div>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>

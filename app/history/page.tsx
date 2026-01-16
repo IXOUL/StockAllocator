@@ -87,7 +87,7 @@ export default function HistoryPage() {
         <div className="page-brand">
           <img src="/logo.png" alt="logo" />
           <div>
-            <div className="page-brand-title">Eazypezy Stock Distribution Manager</div>
+            <div className="page-brand-title">Stock Distribution Manager</div>
           </div>
         </div>
         <nav className="page-nav">
@@ -95,45 +95,48 @@ export default function HistoryPage() {
           <a href="/history">查看历史</a>
         </nav>
       </div>
-      <h1>历史数据</h1>
-      <p className="lead">点击周次查看已保存的结果，可导出或清空。</p>
-
-      <div className="card" style={{ marginBottom: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <span className="tag">已保存周次</span>
-        {storedWeeks.length === 0 && <span className="pill muted">暂无</span>}
-        {storedWeeks.map((w) => (
-          <div key={w} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <button className="secondary" onClick={() => handleLoadHistory(w)}>
-              {w}
-            </button>
+      <div className="card" style={{ padding: "32px 48px" }}>
+        <div className="history-heading">
+          <h1>历史数据</h1>
+          <p className="lead">点击周次查看已保存的结果，可导出或清空。</p>
+        </div>
+        <div className="history-actions">
+          <span className="tag">已保存周次</span>
+          {storedWeeks.length === 0 && <span className="pill muted">暂无</span>}
+          {storedWeeks.map((w) => (
+            <div key={w} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <button className="secondary" onClick={() => handleLoadHistory(w)}>
+                {w}
+              </button>
+              <button
+                className="secondary"
+                onClick={() => {
+                  if (confirm(`删除周次 ${w} 的数据？`)) {
+                    deleteStored(w);
+                    if (selectedWeek === w) setSelectedWeek(undefined);
+                  }
+                }}
+                style={{ padding: "6px 8px" }}
+              >
+                删除
+              </button>
+            </div>
+          ))}
+          {storedWeeks.length > 0 && (
             <button
               className="secondary"
               onClick={() => {
-                if (confirm(`删除周次 ${w} 的数据？`)) {
-                  deleteStored(w);
-                  if (selectedWeek === w) setSelectedWeek(undefined);
+                if (confirm("确认清空所有已保存的数据？")) {
+                  clearStored();
+                  refreshStoredWeeks();
+                  setSelectedWeek(undefined);
                 }
               }}
-              style={{ padding: "6px 8px" }}
             >
-              删除
+              清空历史
             </button>
-          </div>
-        ))}
-        {storedWeeks.length > 0 && (
-          <button
-            className="secondary"
-            onClick={() => {
-              if (confirm("确认清空所有已保存的数据？")) {
-                clearStored();
-                refreshStoredWeeks();
-                setSelectedWeek(undefined);
-              }
-            }}
-          >
-            清空历史
-          </button>
-        )}
+          )}
+        </div>
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "12px 0" }}>

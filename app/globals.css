@@ -3,7 +3,7 @@
 :root {
   --bg: #f5f7fb;
   --panel: #ffffff;
-  --text: #0f172a;
+  --text: #000000;
   --muted: #6b7280;
   --accent: #2563eb;
   --accent-2: #f97316;
@@ -70,11 +70,11 @@ body {
 
 .topbar a:hover {
   background: rgba(37, 99, 235, 0.1);
-  color: #0f172a;
+  color: #000000;
 }
 
 .page-wrap {
-  padding-top: 24px;
+  padding-top: 0px;
 }
 
 .page-header {
@@ -82,7 +82,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: -30px;
+  margin-bottom: 6px;
 }
 
 .page-brand {
@@ -100,7 +100,7 @@ body {
   font-family: "Zalando Sans SemiExpanded", "Atkinson Hyperlegible", "Segoe UI", sans-serif;
   font-size: 25px;
   font-weight: 700;
-  color: #0f172a;
+  color: #000000;
 }
 
 .page-brand-sub {
@@ -116,7 +116,7 @@ body {
   align-items: center;
   gap: 12px;
   font-weight: 600;
-  color: #000000;
+  color: #0b1016;
 }
 
 .page-nav a {
@@ -188,7 +188,7 @@ a {
 main {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 12px 72px 96px;
+  padding: 0px 72px 96px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -205,6 +205,22 @@ p.lead {
   color: var(--muted);
 }
 
+.history-heading h1 {
+  margin-bottom: 8px;
+}
+
+.history-heading .lead {
+  margin-bottom: 0;
+}
+
+.history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
 .hero {
   position: relative;
   display: grid;
@@ -217,15 +233,12 @@ p.lead {
   border-radius: 20px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  color: #0f172a;
+  color: #000000;
   overflow: hidden;
 }
 
 .hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, rgba(37, 99, 235, 0.08), transparent 60%);
+  content: none;
 }
 
 .hero::after {
@@ -304,7 +317,7 @@ p.lead {
 
 .btn.ghost {
   border: 1px solid #d0d5dd;
-  color: #0f172a;
+  color: #000000;
   background: #f8fafc;
 }
 
@@ -331,7 +344,7 @@ p.lead {
   display: grid;
   gap: 8px;
   font-size: 14px;
-  color: #0f172a;
+  color: #000000;
 }
 
 .hero-card-list div {
@@ -354,8 +367,13 @@ p.lead {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 16px;
+  padding: 20px 32px;
+  margin-bottom: 16px;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.results-card {
+  margin-top: 16px;
 }
 
 .grid {
