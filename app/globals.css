@@ -20,7 +20,7 @@
 
 body {
   margin: 0;
-  background: #DDCDAE;
+  background: #9D9CA7;
   color: var(--text);
   font-family: "Atkinson Hyperlegible", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
@@ -116,7 +116,7 @@ body {
   align-items: center;
   gap: 12px;
   font-weight: 600;
-  color: #0b1016;
+  color: #000000;
 }
 
 .page-nav a {
