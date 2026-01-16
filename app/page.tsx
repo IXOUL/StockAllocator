@@ -170,36 +170,67 @@ function HomeContent() {
 
   return (
     <main>
-      <h1>Stock Allocator</h1>
-      <p className="lead">
-        导入 Excel 周报后，自动计算真实库存并进行库存分配；同时给出低库存提醒与上一周对比触发的“需要重算”标记。
-      </p>
+      <div className="page-header">
+        <div className="page-brand">
+          <img src="/favicon.png" alt="logo" />
+          <div>
+            <div className="page-brand-title">Eazypezy Stock Distribution Manager</div>
+          </div>
+        </div>
+        <nav className="page-nav">
+          <a href="/">数据总览</a>
+          <a href="/history">查看历史</a>
+        </nav>
+      </div>
+      <section className="hero">
+        <div className="hero-content">
+          <h1>导入周报</h1>
+          <h1>自动完成库存分配</h1>
+          <p className="lead">上传 Excel 后自动计算真实库存并生成分配结果，低库存与周度对比一目了然。</p>
+          <div className="hero-meta">覆盖平台：小红书 / 淘宝 / 有赞</div>
+          <div className="hero-actions">
+            <a className="btn primary" href="#controls">
+              开始导入
+            </a>
+          </div>
+        </div>
+        <div className="hero-card">
+          <div className="hero-card-title">三步完成</div>
+          <div className="hero-card-list">
+            <div>上传周报</div>
+            <div>设置阈值与比例</div>
+            <div>生成分配结果</div>
+          </div>
+        </div>
+      </section>
 
-      <ControlsPanel
-        weekId={weekId}
-        weekIdPrev={weekIdPrev}
-        year={year}
-        thresholds={thresholds}
-        loading={loading}
-        formError={formError}
-        onWeekIdChange={(v) => {
-          setWeekIdTouched(true);
-          setWeekId(v);
-        }}
-        onWeekIdPrevChange={(v) => {
-          setWeekIdPrevTouched(true);
-          setWeekIdPrev(v);
-        }}
-        onYearChange={setYear}
-        onThresholdsChange={setThresholds}
-        onFilePicked={setSelectedFile}
-        onProcess={handleProcessUpload}
-        storedWeeks={storedWeeks}
-        onWeekIdPrevSelect={(v) => {
-          setWeekIdPrevTouched(true);
-          setWeekIdPrev(v);
-        }}
-      />
+      <div id="controls">
+        <ControlsPanel
+          weekId={weekId}
+          weekIdPrev={weekIdPrev}
+          year={year}
+          thresholds={thresholds}
+          loading={loading}
+          formError={formError}
+          onWeekIdChange={(v) => {
+            setWeekIdTouched(true);
+            setWeekId(v);
+          }}
+          onWeekIdPrevChange={(v) => {
+            setWeekIdPrevTouched(true);
+            setWeekIdPrev(v);
+          }}
+          onYearChange={setYear}
+          onThresholdsChange={setThresholds}
+          onFilePicked={setSelectedFile}
+          onProcess={handleProcessUpload}
+          storedWeeks={storedWeeks}
+          onWeekIdPrevSelect={(v) => {
+            setWeekIdPrevTouched(true);
+            setWeekIdPrev(v);
+          }}
+        />
+      </div>
       <div className="card" style={{ marginBottom: 12 }}>
         <RatioInput ratios={ratios} onChange={setRatios} />
       </div>
